@@ -15,6 +15,9 @@ using Autofac.Extensions.DependencyInjection;
 using Autofac;
 using ApplicationCore.DI;
 using ApplicationCore.Settings;
+using OpenIddict.Validation.AspNetCore;
+using OpenIddict.Server.AspNetCore;
+using Polly;
 
 Log.Logger = new LoggerConfiguration()
    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information)
@@ -71,6 +74,11 @@ try
    #endregion
 
    #region OpenIddict
+   string securityKey = Configuration[$"{SettingsKeys.Auth}:SecurityKey"] ?? "";
+   if (String.IsNullOrEmpty(securityKey))
+   {
+      throw new Exception("Failed Add AddJwtBearer. Empty SecurityKey.");
+   }
    services.AddOpenIddict()
     .AddCore(options =>
     {
@@ -89,14 +97,8 @@ try
        options.AllowAuthorizationCodeFlow()
           .AllowRefreshTokenFlow();
 
-       // Register the encryption credentials. This sample uses a symmetric
-       // encryption key that is shared between the server and the Api2 sample
-       // (that performs local token validation instead of using introspection).
-       //
-       // Note: in a real world application, this encryption key should be
-       // stored in a safe place (e.g in Azure KeyVault, stored as a secret).
        options.AddEncryptionKey(new SymmetricSecurityKey(
-          Convert.FromBase64String("DRjd/GnduI3Efzen9V9BvbNUfc/VKgXltV7Kbk9sMkY=")));
+          Convert.FromBase64String(securityKey)));
 
        // Register the signing credentials.
        options.AddDevelopmentSigningCertificate();
@@ -118,6 +120,8 @@ try
 
        // Register the ASP.NET Core host.
        options.UseAspNetCore();
+
+       
     });
    #endregion
 
@@ -131,8 +135,8 @@ try
    services.AddSwagger(Configuration);
 
    var app = builder.Build();
-   app.UseDefaultFiles();
-   app.UseStaticFiles();
+   //app.UseDefaultFiles();
+  
    app.UseSerilogRequestLogging();
 
    if (app.Environment.IsDevelopment())
@@ -161,12 +165,15 @@ try
    }
 
    app.UseHttpsRedirection();
-   app.UseCors("Api");
+   app.UseCors("Global");
    
    app.UseAuthentication();
    app.UseAuthorization();
+
+   app.UseStaticFiles();
+   app.UseRouting();
    app.MapControllers();
-   app.MapFallbackToFile("/index.html");
+
    app.Run();
 }
 catch (Exception ex)

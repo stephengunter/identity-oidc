@@ -1,31 +1,25 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore;
-using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
-using Web.Models;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-using Microsoft.EntityFrameworkCore;
-using Polly;
 using ApplicationCore.Models;
 using Infrastructure.Helpers;
-using static OpenIddict.Abstractions.OpenIddictConstants.Permissions;
 using ApplicationCore.Services;
+using Microsoft.AspNetCore.Cors;
+
+
 namespace Web.Controllers;
 
-[Route("authorize")]
+[EnableCors("Global")]
 [ApiController]
+[Route("authorize")]
 public class AuthorizationController : ControllerBase
 {
-   private readonly IOpenIddictScopeManager _scopeManager;
    private readonly IUsersService _usersService;
-   public AuthorizationController(IOpenIddictScopeManager scopeManager, IUsersService usersService)
+   public AuthorizationController(IUsersService usersService)
    {
-      _scopeManager = scopeManager;
       _usersService = usersService;
    }
    [HttpPost]
@@ -64,7 +58,7 @@ public class AuthorizationController : ControllerBase
 
       identity.SetScopes(scopes);
       // Allow all claims to be added in the access tokens.
-      identity.SetDestinations(claim => [Destinations.AccessToken]);
+      identity.SetDestinations(claim => [Destinations.AccessToken, Destinations.IdentityToken]);
       return identity;
    }
 }

@@ -25,7 +25,7 @@ public static class CorsDI
          {
             builder.WithOrigins(clientUrl, adminUrl)
                  .AllowAnyHeader()
-						.AllowAnyMethod();//.AllowCredentials();
+						.AllowAnyMethod();
          });
 
          options.AddPolicy("Admin",
