@@ -47,6 +47,17 @@ public static class InputHelpers
 
       return true;
    }
+   public static bool IsValidUrl(this string input)
+   {
+      if (string.IsNullOrWhiteSpace(input)) return false;
+
+      if (Uri.TryCreate(input, UriKind.Absolute, out var uriResult))
+      {
+         return uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps;
+      }
+
+      return false;
+   }
 
    public static string FormatNumberWithLeadingZeros(this int num, int len)
    {

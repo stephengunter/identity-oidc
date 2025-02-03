@@ -70,7 +70,7 @@ public abstract class BaseApiController : BaseController
 
 [EnableCors("Admin")]
 [Route("admin/[controller]")]
-[Authorize(Policy = "Admin")]
+[Authorize(AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme, Policy = "Admin")]
 public class BaseAdminController : BaseController
 {
    

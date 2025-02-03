@@ -7,12 +7,11 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 using ApplicationCore.Models;
 using Infrastructure.Helpers;
 using ApplicationCore.Services;
-using Microsoft.AspNetCore.Cors;
 
 
 namespace Web.Controllers;
 
-[EnableCors("Global")]
+
 [ApiController]
 [Route("authorize")]
 public class AuthorizationController : ControllerBase

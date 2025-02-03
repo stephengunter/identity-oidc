@@ -46,8 +46,6 @@ public static class SeedData
       var manager = serviceProvider.GetRequiredService<IOpenIddictApplicationManager>();
       await CreateApplicationsAsync(serviceProvider.GetRequiredService<IOpenIddictApplicationManager>());
       await CreateScopesAsync(serviceProvider.GetRequiredService<IOpenIddictScopeManager>());
-      //await SeedClientApps(manager, configuration);
-      //await CreateScopesAsync(serviceProvider.GetRequiredService<IOpenIddictScopeManager>());
 
       using (var roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>())
 		{

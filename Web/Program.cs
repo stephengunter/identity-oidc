@@ -126,6 +126,7 @@ try
    #endregion
 
    services.AddCorsPolicy(Configuration);
+   builder.Services.AddAuthorizationPolicy();
    services.AddDtoMapper();
    services.AddControllers()
       .AddJsonOptions(options =>
@@ -161,17 +162,30 @@ try
    }
    else
    {
-      
+
    }
 
    app.UseHttpsRedirection();
-   app.UseCors("Global");
+
+   app.UseStaticFiles(); 
+   app.UseRouting();
+
+   app.UseCors("Api");
    
    app.UseAuthentication();
    app.UseAuthorization();
 
-   app.UseStaticFiles();
-   app.UseRouting();
+   app.Use(async (context, next) =>
+   {
+      if (context.Request.Path == "/")
+      {
+         context.Response.ContentType = "text/html";
+         await context.Response.SendFileAsync("wwwroot/index.html");
+         return;
+      }
+
+      await next();
+   });
    app.MapControllers();
 
    app.Run();
