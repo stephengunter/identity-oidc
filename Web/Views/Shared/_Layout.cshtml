@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="utf-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>@ViewData["Title"] - 花高應用系統入口</title>
+   <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+   <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+   <link rel="stylesheet" href="~/lib/material-icons/iconfont/material-icons.css">
+
+</head>
+<body>
+   <header>
+      <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+         <div class="container-fluid">
+            <a class="navbar-brand" style="font-size: 1.8rem;" asp-area="" asp-controller="Home" asp-action="Index">花高應用系統入口</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+               <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+               <!-- Navbar Links -->
+               <ul class="navbar-nav flex-grow-1">
+                  @* <li class="nav-item">
+                     <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                  </li>
+                  <li class="nav-item">
+                     <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                  </li> *@
+                  
+               </ul>
+
+               <ul class="navbar-nav">
+                  @if (User.Identity is not null && User.Identity.IsAuthenticated)
+                  {
+                     <!-- Dropdown for Logged-In User -->
+                     <li class="nav-item dropdown">
+                       
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                           @User.Identity.Name
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                           @* <li><a class="dropdown-item" asp-area="" asp-controller="Account" asp-action="Profile">Profiles</a></li>
+                        <li><a class="dropdown-item" asp-area="" asp-controller="Account" asp-action="MyItems">My Items</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        *@
+                           <li><a href="#" onclick="submitLogoutForm()" class="dropdown-item">登出</a></li>
+                        </ul>
+                     </li>
+                     <form id="fm_logout" asp-area="" asp-controller="Account" asp-action="Logout" method="post" style="display: none;">
+                        @Html.AntiForgeryToken()
+                     </form>
+                  }
+                  else
+                  {
+                     <!-- Login Link for Non-Authenticated Users -->
+                     <li class="nav-item">
+                        <a id="login-link" class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                     </li>
+
+                  }
+               </ul>
+            </div>
+         </div>
+      </nav>
+   </header>
+
+   <!-- <span class="material-icons me-2" style="font-size: 32px; color: #007bff;">
+      apps
+   </span>
+   -->
+   <!-- <span class="material-icons">pie_chart</span>          Filled -->
+   <!-- <span class="material-icons-outlined">pie_chart</span> Outlined -->
+   <!-- <span class="material-icons-round">pie_chart</span>    Round -->
+   <!-- <span class="material-icons-sharp">pie_chart</span>    Sharp -->
+   <!-- <span class="material-icons-two-tone">pie_chart</span> Two Tone -->
+
+   <div class="container">
+      <main role="main" class="pb-3" style="min-height: 650px;">
+         @RenderBody()
+      </main>
+   </div>
+
+   <footer class="border-top footer text-muted">
+      <div class="container mt-3">
+         &copy; 2024 花高應用系統入口 - 花高資訊室
+      </div>
+   </footer>
+   <script src="~/lib/jquery/dist/jquery.min.js"></script>
+   <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+   <script src="~/js/site.js" asp-append-version="true"></script>
+
+   @await RenderSectionAsync("Scripts", required: false)
+   <script>
+      document.addEventListener("DOMContentLoaded", function () {
+         // Check if the current path includes "Account/Login"
+         if (window.location.pathname === "/Account/Login") {
+            // Hide the login link if on the login page
+            document.getElementById("login-link").style.display = "none";
+         }
+      });
+      function submitLogoutForm() {
+         const form = document.getElementById("fm_logout");
+         if (form) {
+            form.submit();
+         } else {
+            console.warn("Form with id 'fm_logout' not found.");
+         }
+      }
+   </script>
+</body>
+</html>

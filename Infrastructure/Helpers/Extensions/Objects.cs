@@ -18,7 +18,7 @@ public static class ObjectsHelpers
 
       return keys;
    }
-	public static void SetValuesTo(this object source, object dest, ICollection<string> exceptsNames)
+	public static void SetValuesTo(this object source, object dest, ICollection<string>? exceptsNames = null)
 	{
       var sourceProperties = source.GetType().GetProperties();
       var destProperties = dest.GetType().GetProperties();
@@ -30,21 +30,14 @@ public static class ObjectsHelpers
             var isExcept = (exceptsNames.FirstOrDefault(x => sourceProperty.Name.EqualTo(x)) != null);
             if (isExcept) continue;
          }
-         var destProperty = destProperties.FirstOrDefault(p => p.Name == sourceProperty.Name);
-         if (destProperty != null && destProperty.CanWrite)
+         var destProperty = destProperties.FirstOrDefault(p => p.Name == sourceProperty.Name && p.PropertyType == sourceProperty.PropertyType);
+			if (destProperty is null) continue;
+
+         if (destProperty.CanWrite)
          {
             var value = sourceProperty.GetValue(source);
             destProperty.SetValue(dest, value);
          }
-      }
-   }
-   public static void SetValuesTo(this object source, object dest, string excepts = "")
-   {
-      if (string.IsNullOrEmpty(excepts)) SetValuesTo(source, dest, new List<string>());
-      else
-      {
-         var exceptsNames = excepts.SplitToList();
-         SetValuesTo(source, dest, exceptsNames);
       }
    }
 

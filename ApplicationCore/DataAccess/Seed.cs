@@ -44,8 +44,6 @@ public static class SeedData
 	   context.Database.EnsureCreated();
 
       var manager = serviceProvider.GetRequiredService<IOpenIddictApplicationManager>();
-      await CreateApplicationsAsync(serviceProvider.GetRequiredService<IOpenIddictApplicationManager>());
-      await CreateScopesAsync(serviceProvider.GetRequiredService<IOpenIddictScopeManager>());
 
       using (var roleManager = serviceProvider.GetRequiredService<RoleManager<Role>>())
 		{
@@ -123,93 +121,4 @@ public static class SeedData
 			}
 		}
 	}
-   static async Task CreateApplicationsAsync(IOpenIddictApplicationManager manager)
-   {
-      if (await manager.FindByClientIdAsync("identity-web") is null)
-      {
-         await manager.CreateAsync(new OpenIddictApplicationDescriptor
-         {
-            ClientId = "identity-web",
-            ClientType = ClientTypes.Public,
-            RedirectUris =
-                {
-                    new Uri("http://localhost:5112/"),
-                    new Uri("http://localhost:5112/signin-callback"),
-                    new Uri("http://localhost:5112/signin-silent-callback"),
-                },
-            Permissions =
-                {
-                    Permissions.Endpoints.Authorization,
-                    //Permissions.Endpoints,
-                    Permissions.Endpoints.Token,
-                    Permissions.GrantTypes.AuthorizationCode,
-                    Permissions.GrantTypes.RefreshToken,
-                    Permissions.ResponseTypes.Code,
-                    Permissions.Scopes.Email,
-                    Permissions.Scopes.Profile,
-                    Permissions.Scopes.Roles,
-                    Permissions.Prefixes.Scope + "identity-api"
-                },
-            Requirements =
-                {
-                    Requirements.Features.ProofKeyForCodeExchange,
-                },
-         });
-      }
-      if (await manager.FindByClientIdAsync("identity-admin") is null)
-      {
-         await manager.CreateAsync(new OpenIddictApplicationDescriptor
-         {
-            ClientId = "identity-admin",
-            ClientType = ClientTypes.Public,
-            RedirectUris =
-                {
-                    new Uri("http://localhost:3000/"),
-                    new Uri("http://localhost:3000/signin-callback"),
-                    new Uri("http://localhost:3000/signin-silent-callback"),
-                },
-            Permissions =
-                {
-                    Permissions.Endpoints.Authorization,
-                    //Permissions.Endpoints,
-                    Permissions.Endpoints.Token,
-                    Permissions.GrantTypes.AuthorizationCode,
-                    Permissions.GrantTypes.RefreshToken,
-                    Permissions.ResponseTypes.Code,
-                    Permissions.Scopes.Email,
-                    Permissions.Scopes.Profile,
-                    Permissions.Scopes.Roles,
-                    Permissions.Prefixes.Scope + "identity-api"
-                },
-            Requirements =
-                {
-                    Requirements.Features.ProofKeyForCodeExchange,
-                },
-         });
-      }
-      if (await manager.FindByClientIdAsync("identity-api") is null)
-      {
-         await manager.CreateAsync(new OpenIddictApplicationDescriptor
-         {
-            ClientId = "identity-api",
-            ClientSecret = "846B62D0-DEF9-4215-A99D-86E6B8DAB342",
-            Permissions =
-            {
-               Permissions.Endpoints.Introspection
-            }
-         });
-      }
-   }
-
-   static async Task CreateScopesAsync(IOpenIddictScopeManager manager)
-   {
-      if (await manager.FindByNameAsync("identity-api") is null)
-      {
-         await manager.CreateAsync(new OpenIddictScopeDescriptor
-         {
-
-            Name = "identity-api"
-         });
-      }
-   }
 }

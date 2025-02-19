@@ -1,25 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
-using ApplicationCore.DataAccess;
 using OpenIddict.Abstractions;
-using ApplicationCore.Consts;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using Permissions = OpenIddict.Abstractions.OpenIddictConstants.Permissions;
+using ApplicationCore.Services;
 
 namespace Web.Controllers.Tests;
 
 public class AATestsController : BaseTestController
 {
-   private readonly IOpenIddictApplicationManager _applicationManager;
-   public AATestsController(IOpenIddictApplicationManager applicationManager)
+   private readonly IUsersService _usersService;
+   public AATestsController(IUsersService usersService)
    {
-      _applicationManager = applicationManager;
+      _usersService = usersService;
    }
    [HttpGet]
    public async Task<ActionResult> Index()
    {
-      var application = await _applicationManager.FindByClientIdAsync("test96967854");
-      if (application == null) return NotFound();
-      await _applicationManager.DeleteAsync(application);
-      return Ok("test");
+      string url = "http://localhost:3000/";
+      if(!url.EndsWith("/")) url += "/";
+      string src = "identity-api";
+      string path = $"{url}login?source={src}";
+      return Ok(path);   
    }
 }

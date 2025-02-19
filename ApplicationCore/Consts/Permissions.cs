@@ -17,3 +17,8 @@ public enum AppRoles
    Driver,
    CarManager, //¨®½øºÞ²z
 }
+public class AdminRoles
+{
+   public static string Dev = "Dev";
+   public static string Boss = "Boss";
+}

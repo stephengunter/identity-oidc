@@ -1,5 +1,4 @@
 ﻿using ApplicationCore.Models;
-using ApplicationCore.Models.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Reflection;
@@ -22,13 +21,7 @@ public class DefaultContext : IdentityDbContext<User, Role, string,
       builder.UseOpenIddict();
    }
    public DbSet<Profiles> Profiles => Set<Profiles>();
-
-
-   #region Auth
-   public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
-	public DbSet<OAuth> OAuth => Set<OAuth>();
-   public DbSet<AuthToken> AuthTokens => Set<AuthToken>();
-   #endregion
+   public DbSet<App> Apps => Set<App>();
 
    public override int SaveChanges() => SaveChangesAsync().GetAwaiter().GetResult();
 

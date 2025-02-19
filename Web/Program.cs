@@ -5,19 +5,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
-using System.Text.Json.Serialization;
 using Infrastructure.Helpers;
-using static OpenIddict.Abstractions.OpenIddictConstants;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Autofac.Extensions.DependencyInjection;
 using Autofac;
 using ApplicationCore.DI;
 using ApplicationCore.Settings;
-using OpenIddict.Validation.AspNetCore;
 using OpenIddict.Server.AspNetCore;
-using Polly;
+using ApplicationCore.Helpers;
 
 Log.Logger = new LoggerConfiguration()
    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information)
@@ -44,6 +40,7 @@ try
 
    #endregion
    var services = builder.Services;
+   services.AddControllersWithViews();
 
    #region Add Configurations
    services.Configure<AppSettings>(Configuration.GetSection(SettingsKeys.App));
@@ -51,6 +48,17 @@ try
    services.Configure<AuthSettings>(Configuration.GetSection(SettingsKeys.Auth));
    services.Configure<CompanySettings>(Configuration.GetSection(SettingsKeys.Company));
    #endregion
+
+  
+   services.AddAuthentication(options =>
+   {
+      options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+      options.DefaultChallengeScheme = OpenIddictServerAspNetCoreDefaults.AuthenticationScheme; // Important!
+   })
+   .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+   {
+      options.LoginPath = "/account/login"; 
+   });
 
    string connectionString = Configuration.GetConnectionString("Default")!;
    services.AddDbContext<DefaultContext>(options =>
@@ -87,15 +95,22 @@ try
     })
     .AddServer(options =>
     {
-       // Enable the authorization, introspection and token endpoints.
-       options.SetAuthorizationEndpointUris("authorize")
-             .SetTokenEndpointUris("token");
+       options
+         .AllowClientCredentialsFlow()
+         .AllowAuthorizationCodeFlow()
+           // .RequireProofKeyForCodeExchange() // PKCE for security
+         .AllowRefreshTokenFlow();
 
-       // Note: this sample only uses the authorization code and refresh token
-       // flows but you can enable the other flows if you need to support implicit,
-       // password or client credentials.
-       options.AllowAuthorizationCodeFlow()
-          .AllowRefreshTokenFlow();
+
+       // Enable the authorization, introspection and token endpoints.
+       options
+         .SetTokenEndpointUris("/connect/token")
+         .SetAuthorizationEndpointUris("/connect/authorize")
+         .SetUserInfoEndpointUris("/connect/userinfo");
+
+       //
+       //options.RegisterScopes(Scopes.Email, Scopes.Profile, Scopes.OpenId);
+
 
        options.AddEncryptionKey(new SymmetricSecurityKey(
           Convert.FromBase64String(securityKey)));
@@ -111,32 +126,40 @@ try
        // resolved from the authorization code to produce access and identity tokens.
        //
        options.UseAspNetCore()
-             .EnableAuthorizationEndpointPassthrough();
+         .EnableTokenEndpointPassthrough()
+         .EnableAuthorizationEndpointPassthrough()
+         .EnableUserInfoEndpointPassthrough();
+
     })
-    .AddValidation(options =>
-    {
-       // Import the configuration from the local OpenIddict server instance.
-       options.UseLocalServer();
+   .AddValidation(options =>
+   {
+      // Import the configuration from the local OpenIddict server instance.
+      options.UseLocalServer();
 
-       // Register the ASP.NET Core host.
-       options.UseAspNetCore();
+      // Register the ASP.NET Core host.
+      options.UseAspNetCore();
 
-       
-    });
+   });
    #endregion
+   string key = Configuration[$"{SettingsKeys.App}:Key"]!;
+   if (String.IsNullOrEmpty(key))
+   {
+      throw new Exception("app key not been set.");
+   }
+   
+   services.AddScoped<ICryptoService>(provider => new AesGcmCryptoService(key.DeriveKeyFromString()));
 
    services.AddCorsPolicy(Configuration);
-   builder.Services.AddAuthorizationPolicy();
+   services.AddAuthorizationPolicy();
    services.AddDtoMapper();
-   services.AddControllers()
-      .AddJsonOptions(options =>
-      {
-         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-      });
+   //services.AddControllers()
+   //   .AddJsonOptions(options =>
+   //   {
+   //      options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+   //   });
    services.AddSwagger(Configuration);
 
    var app = builder.Build();
-   //app.UseDefaultFiles();
   
    app.UseSerilogRequestLogging();
 
@@ -175,18 +198,19 @@ try
    app.UseAuthentication();
    app.UseAuthorization();
 
-   app.Use(async (context, next) =>
-   {
-      if (context.Request.Path == "/")
-      {
-         context.Response.ContentType = "text/html";
-         await context.Response.SendFileAsync("wwwroot/index.html");
-         return;
-      }
+   //app.Use(async (context, next) =>
+   //{
+   //   if (context.Request.Path == "/")
+   //   {
+   //      context.Response.ContentType = "text/html";
+   //      await context.Response.SendFileAsync("wwwroot/index.html");
+   //      return;
+   //   }
 
-      await next();
-   });
-   app.MapControllers();
+   //   await next();
+   //});
+   app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}")
+      .WithStaticAssets();
 
    app.Run();
 }

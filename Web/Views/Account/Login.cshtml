@@ -1,0 +1,23 @@
+﻿@model Web.Models.PasswordLoginRequest
+@{
+   ViewData["Title"] = "使用者登入";
+}
+<div class="container mt-5" style="max-width: 600px;">
+   <h2>使用者登入</h2>
+   <form asp-action="Login" method="post">
+      <input type="hidden" asp-for="ReturnUrl" />
+      <div class="form-group">
+         <label asp-for="Username" class="form-label">使用者名稱</label>
+         <input asp-for="Username" class="form-control" />
+         <span asp-validation-for="Username" class="text-danger"></span>
+      </div>
+
+      <div class="form-group mt-3">
+         <label asp-for="Password" class="form-label">密碼</label>
+         <input asp-for="Password" type="password" class="form-control" />
+         <span asp-validation-for="Password" class="text-danger"></span>
+      </div>
+
+      <button type="submit" class="btn btn-success mt-3">登入</button>
+   </form>
+</div>

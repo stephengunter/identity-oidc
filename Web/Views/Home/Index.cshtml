@@ -1,0 +1,32 @@
+﻿@model Web.Models.HomeModel
+
+@{
+   ViewData["Title"] = "首頁";
+}
+<div class="container mt-4">
+
+   <div class="row">
+      
+      @foreach (var app in Model.Apps)
+      {
+         <div class="col-md-3 mb-4">
+            <a target="_blank" href="@app.Url" class="text-decoration-none">
+               <div class="card h-100 shadow-sm">
+                  <div class="card-body d-flex align-items-start">
+                     <span class="material-icons me-2" style="font-size: 36px; margin-top: 3px; color: #007bff;">
+                        @app.Icon
+                     </span>
+                     <div>
+                        <h3 class="card-title mb-1 mt-1">@app.Name</h3>
+                     </div>
+                     <span class="stretched-link"></span>
+                  </div>
+               </div>
+            </a>
+         </div>
+      }
+   </div>
+   <form asp-action="Login" method="post" style="display: none">
+      <input id="" name="" />
+   </form>
+</div>

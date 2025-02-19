@@ -11,6 +11,7 @@ namespace ApplicationCore.Services;
 
 public interface IRolesService
 {
+   Task<IEnumerable<Role>> FetchAsync();
    Task<IEnumerable<Role>> FetchAllAsync();
    
    Task<IEnumerable<Role>> FetchByIdsAsync(ICollection<string> ids);
@@ -31,10 +32,14 @@ public class RolesService : IRolesService
       _rolesRepository = rolesRepository;
       _context = context;
    }
-	string DevRoleName = AppRoles.Dev.ToString();
-	string BossRoleName = AppRoles.Boss.ToString();
+	string DevRoleName = AdminRoles.Dev;
+	string BossRoleName = AdminRoles.Boss;
 
-  
+   public async Task<IEnumerable<Role>> FetchAsync()
+      => await _roleManager.Roles
+                .Where(r => r.Name != DevRoleName && r.Name != BossRoleName)
+                .ToListAsync();
+
    public async Task<IEnumerable<Role>> FetchAllAsync()
       => await _roleManager.Roles.ToListAsync();
    public async Task<IEnumerable<Role>> FetchByIdsAsync(ICollection<string> ids)
